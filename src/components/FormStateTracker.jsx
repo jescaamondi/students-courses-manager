@@ -1,14 +1,19 @@
-export function FormStateTracker({ formState }) {
-  const { isValid, isDirty, isSubmitting, isValidating, touchedFields } =
-    formState;
-
-  const Badge = ({ active, activeClass, inactiveClass, children }) => (
+function Badge({ active, activeClass, inactiveClass, children }) {
+  return (
     <span
       className={`px-3 py-1.5 text-xs font-bold rounded-full ${active ? activeClass : inactiveClass}`}
     >
       {children}
     </span>
   );
+}
+
+const idle = "bg-neutral-800 text-neutral-500 border border-neutral-700";
+
+export function FormStateTracker({ formState }) {
+  const { isValid, isDirty, isSubmitting, isValidating, touchedFields } =
+    formState;
+  const isTouched = Object.keys(touchedFields).length > 0;
 
   return (
     <div className="flex flex-wrap gap-2 mb-5 p-4 bg-neutral-900 rounded-xl border border-neutral-800">
@@ -21,17 +26,17 @@ export function FormStateTracker({ formState }) {
       </Badge>
 
       <Badge
-        active={Object.keys(touchedFields).length > 0}
+        active={isTouched}
         activeClass="bg-amber-500/20 text-amber-400 border border-amber-500/30"
-        inactiveClass="bg-neutral-800 text-neutral-500 border border-neutral-700"
+        inactiveClass={idle}
       >
-        {Object.keys(touchedFields).length > 0 ? "Touched" : "Untouched"}
+        {isTouched ? "Touched" : "Untouched"}
       </Badge>
 
       <Badge
         active={isDirty}
         activeClass="bg-blue-500/20 text-blue-400 border border-blue-500/30"
-        inactiveClass="bg-neutral-800 text-neutral-500 border border-neutral-700"
+        inactiveClass={idle}
       >
         {isDirty ? "Dirty" : "Clean"}
       </Badge>
@@ -39,7 +44,7 @@ export function FormStateTracker({ formState }) {
       <Badge
         active={isSubmitting}
         activeClass="bg-purple-500/20 text-purple-400 border border-purple-500/30 animate-pulse"
-        inactiveClass="bg-neutral-800 text-neutral-500 border border-neutral-700"
+        inactiveClass={idle}
       >
         {isSubmitting ? "Submitting…" : "Idle"}
       </Badge>
@@ -47,7 +52,7 @@ export function FormStateTracker({ formState }) {
       <Badge
         active={isValidating}
         activeClass="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-        inactiveClass="bg-neutral-800 text-neutral-500 border border-neutral-700"
+        inactiveClass={idle}
       >
         {isValidating ? "Validating…" : "Validated"}
       </Badge>

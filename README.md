@@ -1,8 +1,18 @@
-# Students & Courses API
+# Students & Courses Manager
 
-A small REST API you can practise on: list data, create it, change it, delete it, and follow the relationship between students and the courses they are enrolled in.
+A web app for managing students, courses and enrolments, built with Next.js, React Hook Form and TanStack Query.
 
-There is nothing to install beyond the project's own dependencies — no database, no accounts, no API keys.
+## What I built
+
+The REST API was provided as a class starter. I built the frontend on top of it:
+
+- **Forms with React Hook Form and Zod.** Add and edit students and courses, with validation as you type.
+- **Server errors on the right field.** When the API rejects a value, for example a duplicate email, the message appears under that input.
+- **Data loading and saving with TanStack Query.** Lists refresh automatically after every create, edit or delete.
+- **Enrolment.** Choose which courses a student takes from inside the student form.
+- **A live form-state tracker** that shows whether the form is valid, touched, dirty, submitting or validating.
+
+## API reference
 
 ## Running it
 
@@ -77,8 +87,8 @@ So in JavaScript there is one rule to remember — what you want is always under
 const response = await fetch("http://localhost:3000/api/students");
 const { data, meta } = await response.json();
 
-console.log(data);            // the array of students
-console.log(meta.totalPages); // how many pages there are
+console.log(data);            
+console.log(meta.totalPages); 
 ```
 
 And when something fails, read the body — it tells you exactly what was wrong:
@@ -363,93 +373,10 @@ src/lib/validation.js    the field rules
 src/lib/relations.js     connecting students to courses
 src/app/api/...          one route.js per URL
 
-src/components/forms/    the forms - not written yet, see below
+src/components/          the UI: lists, forms and the form-state tracker
 ```
 
 Every route talks to the data only through the functions exported by [src/lib/db.js](src/lib/db.js). Moving to a real database later means rewriting that one file and nothing else.
-
-## Next: the forms
-
-The API above is only half the job. The other half is a UI that talks to it — a form to add a student, a form to edit a course, and so on. Those go in `src/components/forms/`, one file per form, and they are built with **[React Hook Form](https://react-hook-form.com/)**.
-
-**It is not installed yet — install it yourself.** Adding a package to a project is part of the exercise, so here is the whole loop:
-
-**1. Stop the dev server** with `Ctrl+C`, or open a second terminal. Installing while the server runs usually works, but restarting afterwards avoids odd errors.
-
-**2. Install the package**, from the project folder (the one with `package.json` in it):
-
-```bash
-npm install react-hook-form
-```
-
-**3. Look at what changed.** Open [package.json](package.json). There is now a new line under `"dependencies"`:
-
-```json
-"react-hook-form": "^7.x.x"
-```
-
-`npm install <name>` does two things: it downloads the code into `node_modules`, and it records the package in `package.json`. That second part is the important one. `node_modules` is gitignored and never committed — so when a classmate clones this repo, all they get is `package.json`, and their `npm install` rebuilds `node_modules` from that list. A package that is only on your machine and not in `package.json` will break for everyone else.
-
-**4. Commit `package.json` and `package-lock.json`** together. The lock file pins the exact version everyone gets.
-
-**5. Start the server again** with `npm run dev`, and import it in a component.
-
-Useful to know:
-
-- `npm install` with no arguments installs everything already listed — that's step 1 of *Running it* above.
-- `npm install --save-dev <name>` (or `-D`) puts a package under `devDependencies` instead: tools you need while building, but that the running app does not. React Hook Form ships to the browser as part of the app, so it is a normal dependency, not a dev one.
-- `npm uninstall react-hook-form` reverses all of this.
-
-A form component built with it is a client component, so it starts with `"use client"`, and it sends what the user typed to the endpoints documented above:
-
-```jsx
-"use client";
-
-import { useForm } from "react-hook-form";
-
-export function AddStudentForm() {
-  const { register, handleSubmit, setError, formState } = useForm();
-
-  async function onSubmit(values) {
-    const response = await fetch("http://localhost:3000/api/students", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-
-    const payload = await response.json();
-
-    if (!response.ok) {
-      // The API returns { error: { fields: { email: ["..."] } } }, so a failed
-      // save can be shown next to the input that caused it.
-      for (const [field, messages] of Object.entries(payload.error.fields ?? {})) {
-        setError(field, { message: messages[0] });
-      }
-      return;
-    }
-
-    console.log("created", payload.data);
-  }
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <input {...register("firstName", { required: "firstName is required." })} />
-      <p>{formState.errors.firstName?.message}</p>
-
-      <button type="submit" disabled={formState.isSubmitting}>
-        Save
-      </button>
-    </form>
-  );
-}
-```
-
-Two kinds of checking are going on there, and both are needed:
-
-- **In the form** (`required`, and the other rules you pass to `register`) — instant feedback, no network round trip. It is for the person typing.
-- **In the API** ([src/lib/validation.js](src/lib/validation.js)) — the real gate. A browser can be bypassed entirely with `curl`, so the server can never trust what it is sent. It is for the data.
-
-Because the API reports failures per field, the two line up: `error.fields` maps straight onto React Hook Form's `setError`, and a `409` (duplicate email) can be shown on the email input exactly like a `400`.
 
 ## Things worth knowing
 
