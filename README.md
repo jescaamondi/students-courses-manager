@@ -12,8 +12,6 @@ The REST API was provided as a class starter. I built the frontend on top of it:
 - **Enrolment.** Choose which courses a student takes from inside the student form.
 - **A live form-state tracker** that shows whether the form is valid, touched, dirty, submitting or validating.
 
-## API reference
-
 ## Running it
 
 **1. Install the project's dependencies.** Run this once, in the project folder. It reads [package.json](package.json) and downloads everything listed there into `node_modules`.
